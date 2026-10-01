@@ -4,6 +4,7 @@ You are one of several agents on this repo: Claude Code, Codex, Grok, Hermes, Cu
 This file is the constitution. Chat history, Obsidian, old PRDs and other chats do NOT override it.
 **Automatic, every session, without being asked:** your first actions are SESSION START, your last are SESSION END.
 If Riles just says "go", "start", or "next", that means: do the NOW item.
+"/goal" — build until NEXT is empty; merge on SAFE is pre-authorized for the run.
 Scripts live in `~/.claude/skills/canon/scripts/` (below: `$C`; set `C=~/.claude/skills/canon/scripts` in your shell).
 Your agent name = `<tool>-<machine>`: `claude-wsl`, `codex-piclaw`, `grokbot`, `hermes-piclaw`.
 Codex: run with network access on, or git/gh/claim will fail.
@@ -53,6 +54,7 @@ a Launch produces a real merged report end to end.
 - He does not code. Terse, decisive answers. Recommend one thing; no option menus.
 - Key decisions get an explicit `[VERIFY]` and a yes before executing.
 - Never cut, kill, demote, or drop scope without his yes on the specific item.
+- Before retiring anything, run /salvage.
 - Merge / deploy / send / spend = his explicit yes.
 
 ## HARD RULES
