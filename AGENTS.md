@@ -4,7 +4,7 @@ You are one of several agents on this repo: Claude Code, Codex, Grok, Hermes, Cu
 This file is the constitution. Chat history, Obsidian, old PRDs and other chats do NOT override it.
 **Automatic, every session, without being asked:** your first actions are SESSION START, your last are SESSION END.
 If Riles just says "go", "start", or "next", that means: do the NOW item.
-"/goal" — build until NEXT is empty; merge on SAFE is pre-authorized for the run.
+"/goal" — build until NEXT is empty, one PR per slice; each merges on SAFE (see MERGING).
 Scripts live in `~/.claude/skills/canon/scripts/` (below: `$C`; set `C=~/.claude/skills/canon/scripts` in your shell).
 Your agent name = `<tool>-<machine>`: `claude-wsl`, `codex-piclaw`, `grokbot`, `hermes-piclaw`.
 Codex: run with network access on, or git/gh/claim will fail.
@@ -25,18 +25,20 @@ The status line reports THIS session. NOW.md is the NEXT session's handoff.
   1. `git push -u origin HEAD`, then `gh pr create --base <default branch> --title "<NOW item>" --body-file <file>` where the body is:
      **What changed** (2 lines, plain English) · **Tests** (n/n) · **Outside the NOW item** (none, or what and why) · **Preview** (link, if the repo gets preview deploys).
   2. `bash $C/canon_review.sh <pr#> <you>` — a different agent comments SAFE TO MERGE / DON'T MERGE on the PR and sets the `canon/review` check GitHub requires before merging.
-  3. `NOWF=$(mktemp)`; write the new NOW.md there: STATE gains "<date> PR #n open: <item>", NOW = top item of NEXT (removed from NEXT),
-     BLOCKED `none` — or `BLOCKED · <next item> · needs PR #n merged · NEED YOU: merge #n` if the next item depends on it.
+  3. SAFE TO MERGE → merge per MERGING. DON'T MERGE → fix on the same branch, push, re-run step 2 (twice DON'T MERGE → Stuck).
+  4. `NOWF=$(mktemp)`; write the new NOW.md there: STATE gains "<date> PR #n merged: <item>" (or "open" if not merged), NOW = top item of NEXT
+     (removed from NEXT), BLOCKED `none` — or `BLOCKED · <next item> · needs PR #n merged · NEED YOU: <action>` if it depends on an unmerged PR.
      `python3 $C/canon_state.py release --agent <session id> --now-file "$NOWF"` (exit 5 = fix the file and rerun).
-  4. Print: `DONE · <item> · tests <n/n> · PR #<n> · review: <first line of the review>`
+  5. Print: `DONE · <item> · tests <n/n> · PR #<n> merged|open · review: <first line of the review>`
 - Stuck: push the branch if it has work. New NOW.md: NOW unchanged, BLOCKED = the line below. Release the same way. Print:
   `BLOCKED · <item> · <what failed> · NEED YOU: <exact action, or "none — next: <command>">`
 - A paragraph, "still working", "see chat", "updated the PRD" = a leak. Not an ending.
 - Can't finish properly (lint won't pass, release keeps failing)? Release anyway with the current `show` output plus one BLOCKED line describing it. Never leave the lock held.
 
 ## MERGING
-Only when Riles says "merge it" / "merge #n": `gh pr merge <n> --squash --delete-branch`, then `git switch <default> && git pull --ff-only`.
-Merging is what deploys. Never merge on your own judgment, never because a review said SAFE.
+On SAFE TO MERGE from `canon_review.sh` (Riles's standing rule, 11/05/2026), or when he says "merge it" / "merge #n":
+`gh pr merge <n> --squash --delete-branch`, then `git switch main && git pull --ff-only`. Never merge without one of those two.
+Merging deploys only where WHAT'S LIVE says "on merge". Manual deploys (servers, databases, app stores) wait for his explicit yes.
 
 ## WHAT THIS IS
 "ASTRA CORE" — a cinematic 3D visualization of an agent swarm. Astra (a reasoning layer) decomposes a goal into
@@ -52,10 +54,10 @@ a Launch produces a real merged report end to end.
 
 ## HOW TO WORK WITH RILES
 - He does not code. Terse, decisive answers. Recommend one thing; no option menus.
-- Key decisions get an explicit `[VERIFY]` and a yes before executing.
+- Key decisions get an explicit `[VERIFY]` and a yes before executing. Merges are not key decisions: they follow MERGING.
 - Never cut, kill, demote, or drop scope without his yes on the specific item.
 - Before retiring anything, run /salvage.
-- Merge / deploy / send / spend = his explicit yes.
+- Manual deploy / send / spend = his explicit yes. Merges follow MERGING.
 
 ## HARD RULES
 - State lives only in NOW.md on the `canon-state` branch, and only `canon_state.py` changes it. Never create a NOW.md on a code branch.
